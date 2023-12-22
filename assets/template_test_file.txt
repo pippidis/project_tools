@@ -1,0 +1,9 @@
+import pytest
+
+# Import the components to test
+from XXXX import YYYY
+
+def test_example_function():
+    result = example_function()
+    expected_result = True 
+    assert result == expected_result, "Optional error message if assertion fails"

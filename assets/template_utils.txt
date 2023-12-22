@@ -1,0 +1,24 @@
+# Utils for this module. 
+# NOTE: Do NOT add global utils here. Just those that is used for only this module. 
+#       This is done to make the module more modular. 
+
+import sys
+from pathlib import Path
+
+# If it is run alone, it needs to get the relevant path of the whole project to for imports to function
+if __name__=='__main__': 
+    root_dir = Path(__file__).resolve().parent.parent.parent  # Adjust the number of .parent as needed
+    sys.path.append(str(root_dir))
+
+XX_LOGGING_SETUP_XX
+
+from project_utils.settings import resolve_setting, rs # The settings package
+
+def example_function() -> bool: 
+    '''Just an example function'''
+    XX_LOGGING_EXAMPLE_XX
+    some_setting = rs(key='TEST', default='NOT HERE')
+    return True
+
+if __name__=='__main__':
+    example_function()

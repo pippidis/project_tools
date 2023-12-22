@@ -1,0 +1,12 @@
+
+
+XX_LOGGING_SETUP_XX
+
+
+def example_function() -> bool: 
+    '''Just an example function'''
+    XX_LOGGING_EXAMPLE_XX
+    return True
+
+if __name__=='__main__':
+    example_function()

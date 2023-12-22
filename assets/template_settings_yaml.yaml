@@ -1,0 +1,3 @@
+# The general settings file for this entire project. Will be overridden by any environmental variables with the same name
+
+example_setting: 'this is an example'

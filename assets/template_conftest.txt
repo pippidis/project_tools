@@ -1,0 +1,20 @@
+import pytest
+
+# Import necessary modules and components for your tests here
+from XXXX import YYYY
+
+@pytest.fixture(scope="function")  # Change the scope as needed
+def fixture_name():  # Rename this fixture according to its purpose
+    """
+    Fixture setup. Executed before each test function that uses this fixture.
+    """
+    # Setup code (e.g., initializing a resource, mock, or state)
+    resource = "Some resource"  # Adjust or initialize as necessary
+
+    try:
+        yield resource  # This value or state is used by the test function
+    finally:
+        pass
+        # Teardown code, executed after the test function completes.
+        # Clean up actions (like closing connections, resetting states) go here.
+        # Handle any necessary cleanup even if the test raises an exception.

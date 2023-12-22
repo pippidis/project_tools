@@ -1,0 +1,65 @@
+
+import sys
+from pathlib import Path
+
+SETTINGS_ROOT_DIR = Path(__file__).resolve().parent.parent
+if __name__=='__main__': # If it is run alone, it needs to get the relevant path of the whole project to for imports to function
+    sys.path.append(str(SETTINGS_ROOT_DIR))
+
+from project_utils.logging import setup_logging # Importing logging
+logger = setup_logging(__name__)
+
+
+import os
+from decouple import Config, RepositoryEnv
+import getpass
+
+# Define where to find the .env file and environment variables
+SETTINGS_ENV_PATH = SETTINGS_ROOT_DIR / '.env'
+if not SETTINGS_ENV_PATH.exists(): # Check if the .env file exists, if not, create it
+    logger.info(f"No .env file found. Creating an empty .env file at {SETTINGS_ENV_PATH}")
+    SETTINGS_ENV_PATH.touch()  # Creates an empty file
+SETTINGS_CONFIG = Config(RepositoryEnv(str(SETTINGS_ENV_PATH)))
+
+def resolve_setting(key: str, default: str = '', ask_string: str = None, is_password: bool = False) -> str: # type: ignore
+    """
+    Resolve a setting from either environment variable, .env file, or ask the user.
+
+    Args:
+        key (str): The key for the setting.
+        default (str): The default value for the setting.
+        ask_string (str, optional): The string to prompt when asking for the setting value. Defaults to None.
+        is_password (bool, optional): Whether the setting is a password. If True, will hide input. Defaults to False.
+
+    Returns:
+        str: The resolved setting value.
+    """
+    try:
+        if is_password:
+            # For passwords, you might want to always prompt the user
+            return getpass.getpass(ask_string or f'Enter password for "{key}": ')
+        else:
+            # Non-passwords can be retrieved from environment or .env file
+            return SETTINGS_CONFIG(key, default=default)
+    except Exception as e:
+        logger.error(f"Error resolving setting for {key}: {e}")
+        raise
+
+def rs(key: str, default: str = '', ask_string: str = None, is_password: bool = False) -> str: # type: ignore
+    """
+    Short form wrapper for resolve_setting method.
+
+    Args:
+        key (str): The key for the setting.
+        default (str): The default value for the setting.
+        ask_string (str, optional): The string to prompt when asking for the setting value. Defaults to None.
+        is_password (bool, optional): Whether the setting is a password. If True, will hide input. Defaults to False.
+
+    Returns:
+        str: The resolved setting value.
+    """
+    return resolve_setting(key, default, ask_string, is_password)
+
+
+if __name__ == "__main__":
+    pass

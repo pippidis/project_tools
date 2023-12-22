@@ -1,0 +1,67 @@
+import logging
+import logging.config
+import yaml
+import os
+from pathlib import Path
+import inspect
+
+# Base stuff
+LOG_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Global settings
+LOG_CONFIG_PATH = LOG_PROJECT_ROOT / XX_LOG_CONFIG_PATH_XX
+LOG_DIR_PATH = LOG_PROJECT_ROOT / XX_LOG_STORAGE_PATH_XX  # Adjust the path to your logs directory
+LOG_FILE_NAME = os.getenv('LOG_FILE_NAME', 'XX_LOGFILE_DEFAULT_NAME_XX')  # The logfile name if there is just one logfile
+
+class CorrectFilenameFilter(logging.Filter):
+    def filter(self, record):
+        stack = inspect.stack()
+        for frame_info in reversed(stack):
+            frame_path = Path(frame_info.filename)
+            # Skip irrelevant files and frames, adjust the condition as needed
+            if not any(ignore in frame_path.name for ignore in ["logging", '__init__', 'main.py']):
+                record.filename = frame_path.name
+                record.lineno = frame_info.lineno  # Capture the line number
+
+                try:
+                    # Try to calculate the relative path
+                    relative_path = frame_path.relative_to(LOG_PROJECT_ROOT)
+                    record.relative_pathname = Path('root') / relative_path
+                except ValueError:
+                    # If it's not a subpath, use the absolute path instead
+                    record.relative_pathname = frame_path.absolute()
+
+                break
+        return True
+
+def setup_logging(module_name):
+    # Load the logging configuration
+    with open(LOG_CONFIG_PATH, 'r') as f:
+        config = yaml.safe_load(f)
+
+    # Ensure the log directory exists
+    LOG_DIR_PATH.mkdir(parents=True, exist_ok=True)
+
+    # Determine the log file name
+    log_file = LOG_DIR_PATH / LOG_FILE_NAME
+
+    # Update the filename in the file handler configuration
+    config['handlers']['file']['filename'] = str(log_file)
+
+    # Apply logging configuration
+    logging.config.dictConfig(config)
+
+    # Create an instance of your custom filter and add it to all handlers
+    correct_filename_filter = CorrectFilenameFilter()
+    for handler in logging.root.handlers:
+        handler.addFilter(correct_filename_filter)
+
+    # Set up the logger with the given module name
+    logger = logging.getLogger(module_name)
+    logger.propagate = True
+    return logger
+
+# Example Usage:
+if __name__ == "__main__":
+    logger = setup_logging(__name__)
+    logger.info('Test log message')
